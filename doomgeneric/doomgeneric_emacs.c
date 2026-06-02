@@ -24,8 +24,8 @@ along with GNU Emacs.  If not, see <https://www.gnu.org/licenses/>.  */
 #include <emacs-module.h>
 #include <string.h>
 
-static emacs_value Qnil, Qaccept_process_output, Qdoom_key, Qdoom_ms,
-    Qdoom_canvas, Qdoom_title;
+static emacs_value Qnil, Qaccept_process_output, Qcanvas_refresh,
+    Qdoom_key, Qdoom_ms, Qdoom_canvas, Qdoom_title;
 static emacs_env* env;
 int plugin_is_GPL_compatible;
 
@@ -51,7 +51,7 @@ void DG_DrawFrame(void) {
     uint32_t* buf = env->is_not_nil (env, canvas) ? env->canvas_pixel(env, canvas) : 0;
     if (buf) {
         memcpy(buf, DG_ScreenBuffer, 4 * DOOMGENERIC_RESX * DOOMGENERIC_RESY);
-        env->canvas_refresh(env, canvas);
+        env->funcall(env, Qcanvas_refresh, 1, &canvas);
     }
 }
 
@@ -81,6 +81,7 @@ int emacs_module_init(struct emacs_runtime *rt) {
         return 2;
     Qnil = sym("nil");
     Qaccept_process_output = sym("accept-process-output");
+    Qcanvas_refresh = sym("canvas-refresh");
     Qdoom_ms = sym("doom-ms");
     Qdoom_canvas = sym("doom-canvas");
     Qdoom_key = sym("doom-key");

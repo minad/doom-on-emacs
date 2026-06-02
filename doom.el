@@ -244,9 +244,8 @@ NAME is an optional readable name."
                               :scale 1.0
                               :margin (0 . 0)
                               :transform-smoothing ,doom-smooth
-                              :canvas-id doom
-                              :canvas-width 320
-                              :canvas-height 200)
+                              :data-width 320
+                              :data-height 200)
           doom-start-ms (doom-ms)
           doom-frame-time (float-time)))
   (with-current-buffer (get-buffer-create doom-buffer)
