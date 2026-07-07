@@ -48,7 +48,7 @@ uint32_t DG_GetTicksMs(void) {
 
 void DG_DrawFrame(void) {
     emacs_value canvas = env->funcall(env, Qdoom_canvas, 0, 0);
-    uint32_t* buf = env->is_not_nil (env, canvas) ? env->canvas_pixel(env, canvas) : 0;
+    uint32_t* buf = env->is_not_nil (env, canvas) ? env->canvas_data(env, canvas) : 0;
     if (buf) {
         memcpy(buf, DG_ScreenBuffer, 4 * DOOMGENERIC_RESX * DOOMGENERIC_RESY);
         env->funcall(env, Qcanvas_refresh, 1, &canvas);
