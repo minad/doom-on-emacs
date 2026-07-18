@@ -241,7 +241,7 @@ NAME is an optional readable name."
     (error "Canvas API is not available"))
   (unless doom-canvas
     (setq doom-canvas `(image :type canvas
-                              :canvas-id doom
+                              :id doom
                               :scale 1.0
                               :margin (0 . 0)
                               :transform-smoothing ,doom-smooth
