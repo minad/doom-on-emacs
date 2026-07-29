@@ -3,12 +3,22 @@
 This is [[https://github.com/id-Software/DOOM][DOOM]] running inside Emacs via a native module. The port is based on
 [[https://github.com/ozkl/doomgeneric][doomgeneric]] such that only a handful of functions like ~DG_DrawFrame~ need to be
 [[file:doomgeneric/doomgeneric_emacs.c][implemented in C]] with some [[file:doom.el][Elisp code as glue]]. It uses the native Canvas API
-which is not yet part of the Emacs source tree (see the [[https://github.com/minad/emacs-canvas-patch][patch]] and the
-[[https://debbugs.gnu.org/cgi/bugreport.cgi?bug=80281][discussion]]).
+which is not yet part of the Emacs source tree, and currently available for
+download as [[https://github.com/minad/emacs-canvas-patch][patch]]. See further canvas links below.
+
+#+html: <img src="https://github.com/minad/doom-on-emacs/blob/main/screenshots/emacs.png?raw=true"/>
+
+# Running DOOM
 
 In order to run DOOM, you first need to apply the Canvas patch to the Emacs
 source and recompile Emacs. Then execute ~./run.sh~ to compile the module and
 start DOOM on Emacs. You will need a WAD file which contains the game data. The
 file ~doom1.wad~ is freely available.
 
-#+html: <img src="https://github.com/minad/doom-on-emacs/blob/main/screenshots/emacs.png?raw=true"/>
+# Canvas links:
+
+- [[https://debbugs.gnu.org/cgi/bugreport.cgi?bug=80281][bug#80281]]
+- [[https://github.com/minad/doom-on-emacs][doom-on-emacs]]
+- [[https://github.com/minad/emacs-canvas-patch][emacs-canvas-patch]]
+- [[https://github.com/minad/emacs-shader-demo][emacs-shader-demo]]
+- [[https://tusharhero.codeberg.page/emacs-pale-canvas-and-stuff-demos.html][Pale and other demos]]
