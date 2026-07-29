@@ -8,14 +8,14 @@ download as [[https://github.com/minad/emacs-canvas-patch][patch]]. See further 
 
 #+html: <img src="https://github.com/minad/doom-on-emacs/blob/main/screenshots/emacs.png?raw=true"/>
 
-# Running DOOM
+* Running DOOM
 
 In order to run DOOM, you first need to apply the Canvas patch to the Emacs
 source and recompile Emacs. Then execute ~./run.sh~ to compile the module and
 start DOOM on Emacs. You will need a WAD file which contains the game data. The
 file ~doom1.wad~ is freely available.
 
-# Canvas links:
+* Canvas links:
 
 - [[https://debbugs.gnu.org/cgi/bugreport.cgi?bug=80281][bug#80281]]
 - [[https://github.com/minad/doom-on-emacs][doom-on-emacs]]
