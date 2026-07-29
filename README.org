@@ -15,7 +15,7 @@ source and recompile Emacs. Then execute ~./run.sh~ to compile the module and
 start DOOM on Emacs. You will need a WAD file which contains the game data. The
 file ~doom1.wad~ is freely available.
 
-* Canvas links:
+* Canvas links
 
 - [[https://debbugs.gnu.org/cgi/bugreport.cgi?bug=80281][bug#80281]]
 - [[https://github.com/minad/doom-on-emacs][doom-on-emacs]]
