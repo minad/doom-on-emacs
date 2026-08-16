@@ -75,6 +75,10 @@
 (defvar doom-mode-line-title nil
   "Window title in mode line.")
 
+(defvar doom-args []
+  "String arguments passed to the DOOM main function.
+Can be set for instance to [\"-iwad\" \"/home/user/path/to/doom1.iwad\"].")
+
 (declare-function doom-tick "ext:doomgeneric_emacs.c")
 
 (defun doom-ms ()
@@ -234,6 +238,7 @@ NAME is an optional readable name."
   (add-hook 'change-major-mode-hook #'doom--barf-change-mode nil 'local)
   (add-hook 'write-contents-functions #'doom--barf-write nil 'local))
 
+;;;###autoload
 (defun doom ()
   "Run DOOM."
   (interactive)

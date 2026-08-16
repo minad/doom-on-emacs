@@ -21,13 +21,24 @@ along with GNU Emacs.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #include "doomkeys.h"
 #include "doomgeneric.h"
-#include <emacs-module.h>
+#include "emacs-module.h"
 #include <string.h>
+#include <setjmp.h>
 
 static emacs_value Qnil, Qaccept_process_output, Qcanvas_refresh,
     Qdoom_key, Qdoom_ms, Qdoom_canvas, Qdoom_title;
 static emacs_env* env;
+static jmp_buf jmp;
+static bool exited = false;
 int plugin_is_GPL_compatible;
+
+void DG_Exit(int status) {
+    exited = true;
+    const char* msg = "DOOM exited. Restart Emacs to play again.";
+    env->funcall(env, env->intern(env, "warn"), 1,
+                 (emacs_value[]){ env->make_string(env, msg, strlen(msg)) });
+    longjmp(jmp, 1);
+}
 
 void DG_Init(void) {
 }
@@ -69,7 +80,8 @@ static emacs_value sym(const char* name) {
 static emacs_value tick(emacs_env* env_, ptrdiff_t nargs,
                         emacs_value args[], void* data) {
     env = env_;
-    doomgeneric_Tick();
+    if (!exited && !setjmp(jmp))
+        doomgeneric_Tick();
     return Qnil;
 }
 
@@ -91,6 +103,24 @@ int emacs_module_init(struct emacs_runtime *rt) {
                      env->intern(env, "doom-tick"),
                      env->make_function(env, 0, 0, tick, 0, 0)
                  });
-    doomgeneric_Create(0, 0);
+    emacs_value args =
+        env->funcall(env, env->intern(env, "symbol-value"), 1,
+                     (emacs_value[]){ env->intern(env, "doom-args") });
+    int argc = env->vec_size(env, args) + 1;
+    char** argv = malloc(sizeof (char*) * (argc + 1));
+    if (!argv)
+        _Exit(1);
+    argv[0] = "DOOM";
+    argv[argc] = 0;
+    for (ptrdiff_t i = 1; i < argc; ++i) {
+        emacs_value val = env->vec_get(env, args, i - 1);
+        ptrdiff_t size = 0;
+        if (!env->copy_string_contents(env, val, 0, &size)
+            || !(argv[i] = malloc(size))
+            || !env->copy_string_contents(env, val, argv[i], &size))
+            _Exit(1);
+    }
+    if (!setjmp(jmp))
+        doomgeneric_Create(argc, argv);
     return 0;
 }

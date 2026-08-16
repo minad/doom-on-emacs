@@ -11,10 +11,10 @@ else
 	VB=@
 endif
 
-EMACS_SRC=$(shell emacs --batch --eval '(princ source-directory)')
 CC=gcc
 CFLAGS+=-ggdb3 -Wall -DNORMALUNIX -DLINUX -DSNDSERV -D_DEFAULT_SOURCE -O2
-CFLAGS+=-I$(EMACS_SRC)src -fPIC -shared
+CFLAGS+=-Dexit=DG_Exit
+CFLAGS+=-fPIC -shared
 CFLAGS+=-DDOOMGENERIC_RESX=320 -DDOOMGENERIC_RESY=200
 
 # subdirectory for objects
