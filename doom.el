@@ -29,7 +29,9 @@
 
 ;;; Commentary:
 
-;; This is DOOM running inside Emacs to test the Canvas API.
+;; This is DOOM running inside Emacs using the Canvas API.  Run M-x doom to
+;; start.  You may want set the variable `doom-args' which provides command line
+;; arguments to DOOM.
 
 ;;; Code:
 
