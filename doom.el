@@ -54,11 +54,9 @@
 (defvar doom-frame-rate 35
   "Refreshing frame rate.")
 
-;; TODO: Smoothing is slow in Emacs except if we use CAIRO_FILTER_GOOD in
-;; image.c or Xrender. See Emacs bug#79204 or
-;; https://lists.gnu.org/r/emacs-devel/2025-07/msg00475.html.
-(defvar doom-smooth nil
-  "Smooth scaling.")
+(defvar doom-smooth t
+  "Smooth scaling.
+Note that smoothing is only fast if hardware accelerated.")
 
 (defvar doom-buffer "*doom*"
   "Buffer name.")
