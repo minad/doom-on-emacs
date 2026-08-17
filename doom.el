@@ -83,8 +83,7 @@ Can be set for instance to [\"-iwad\" \"/home/user/path/to/doom1.iwad\"].")
 
 (defun doom-ms ()
   "Milliseconds since start."
-  (pcase-let ((`(,hi ,lo ,us ,_) (current-time)))
-    (- (+ (* 1000 (logior (ash hi 16) lo)) (/ us 1000)) doom-start-ms)))
+  (floor (* 1000 (float-time))))
 
 (defun doom-title (title)
   "Set TITLE."
