@@ -77,11 +77,42 @@ static emacs_value sym(const char* name) {
     return env->make_global_ref(env, env->intern(env, name));
 }
 
+static void defun(emacs_env* env, const char* name,
+                  ptrdiff_t min, ptrdiff_t max, void* fun) {
+    env->funcall(env, env->intern(env, "defalias"), 2,
+                 (emacs_value[]){
+                     env->intern(env, name),
+                     env->make_function(env, min, max, fun, 0, 0)
+                 });
+}
+
 static emacs_value tick(emacs_env* env_, ptrdiff_t nargs,
                         emacs_value args[], void* data) {
     env = env_;
     if (!exited && !setjmp(jmp))
         doomgeneric_Tick();
+    return Qnil;
+}
+
+static emacs_value create(emacs_env* env_, ptrdiff_t nargs,
+                          emacs_value args[], void* data) {
+    env = env_;
+    char** argv = malloc(sizeof (char*) * (nargs + 2));
+    if (!argv) {
+        exited = true;
+        return Qnil;
+    }
+    argv[0] = "doom";
+    argv[nargs + 1] = 0;
+    for (ptrdiff_t i = 1; i <= nargs; ++i) {
+        ptrdiff_t size = 0;
+        if (!env->copy_string_contents(env, args[i - 1], 0, &size)
+            || !(argv[i] = malloc(size))
+            || !env->copy_string_contents(env, args[i - 1], argv[i], &size))
+            return Qnil;
+    }
+    if (!setjmp(jmp))
+        doomgeneric_Create(nargs + 1, argv);
     return Qnil;
 }
 
@@ -98,29 +129,7 @@ int emacs_module_init(struct emacs_runtime *rt) {
     Qdoom_canvas = sym("doom--canvas");
     Qdoom_key = sym("doom--key");
     Qdoom_title = sym("doom--title");
-    env->funcall(env, env->intern(env, "defalias"), 2,
-                 (emacs_value[]){
-                     env->intern(env, "doom--tick"),
-                     env->make_function(env, 0, 0, tick, 0, 0)
-                 });
-    emacs_value args =
-        env->funcall(env, env->intern(env, "symbol-value"), 1,
-                     (emacs_value[]){ env->intern(env, "doom-args") });
-    int argc = env->vec_size(env, args) + 1;
-    char** argv = malloc(sizeof (char*) * (argc + 1));
-    if (!argv)
-        _Exit(1);
-    argv[0] = "DOOM";
-    argv[argc] = 0;
-    for (ptrdiff_t i = 1; i < argc; ++i) {
-        emacs_value val = env->vec_get(env, args, i - 1);
-        ptrdiff_t size = 0;
-        if (!env->copy_string_contents(env, val, 0, &size)
-            || !(argv[i] = malloc(size))
-            || !env->copy_string_contents(env, val, argv[i], &size))
-            _Exit(1);
-    }
-    if (!setjmp(jmp))
-        doomgeneric_Create(argc, argv);
+    defun(env, "doom--tick", 0, 0, tick);
+    defun(env, "doom--create", 0, emacs_variadic_function, create);
     return 0;
 }

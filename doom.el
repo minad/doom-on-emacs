@@ -51,10 +51,10 @@
 Note that smoothing is only fast if hardware accelerated."
   :type 'boolean)
 
-(defcustom doom-args []
+(defcustom doom-args nil
   "String arguments passed to the DOOM main function.
-Can be set for instance to [\"-iwad\" \"/home/user/path/to/doom1.iwad\"]."
-  :type '(vector string))
+Can be set for instance to (\"-iwad\" \"/home/user/path/to/doom1.iwad\")."
+  :type '(repeat string))
 
 (defvar doom--refresh-timer nil
   "Refresh timer.")
@@ -89,6 +89,7 @@ Can be set for instance to [\"-iwad\" \"/home/user/path/to/doom1.iwad\"]."
 (defvar doom--mode-line-title nil
   "Window title in mode line.")
 
+(declare-function doom--create "ext:doomgeneric_emacs.c")
 (declare-function doom--tick "ext:doomgeneric_emacs.c")
 
 (defun doom--ms ()
@@ -107,7 +108,8 @@ Can be set for instance to [\"-iwad\" \"/home/user/path/to/doom1.iwad\"]."
                   (delta (- time doom--frame-time)))
         (incf doom--frame-count)
         (when (> delta 2)
-          (setq doom--mode-line-frame-rate (format " FPS: %.1f" (/ doom--frame-count delta))
+          (setq doom--mode-line-frame-rate (format " FPS: %.1f"
+                                                   (/ doom--frame-count delta))
                 doom--frame-time time
                 doom--frame-count 0)
           (force-mode-line-update t))
@@ -235,9 +237,10 @@ NAME is an optional readable name."
               show-trailing-whitespace nil
               display-line-numbers nil
               default-directory (expand-file-name "~/")
-              mode-line-process '((doom--mode-line-title " Title: ")
-                                  (doom--mode-line-title doom--mode-line-title)
-                                  (doom--mode-line-frame-rate doom--mode-line-frame-rate))
+              mode-line-process
+              '((doom--mode-line-title " Title: ")
+                (doom--mode-line-title doom--mode-line-title)
+                (doom--mode-line-frame-rate doom--mode-line-frame-rate))
               mode-line-position nil
               mode-line-modified nil
               mode-line-mule-info nil
@@ -285,9 +288,11 @@ NAME is an optional readable name."
           (with-silent-modifications
             (call-process "make" nil t t "-fMakefile.emacs"
                           (format "-j%d" (num-processors))))))
-      (module-load mod)))
+      (module-load mod)
+      (apply #'doom--create doom-args)))
   (unless doom--refresh-timer
-    (setq doom--refresh-timer (run-at-time nil (/ 1.0 doom-frame-rate) #'doom--tick)))
+    (setq doom--refresh-timer
+          (run-at-time nil (/ 1.0 doom-frame-rate) #'doom--tick)))
   (switch-to-buffer doom--buffer)
   (message "%s" (substitute-command-keys
                  "DOOM: Press \\[describe-mode] to see the key bindings")))
