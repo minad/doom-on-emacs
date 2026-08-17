@@ -4,17 +4,17 @@ This is [[https://github.com/id-Software/DOOM][DOOM]] running inside Emacs via a
 [[https://github.com/ozkl/doomgeneric][doomgeneric]] such that only a handful of functions like ~DG_DrawFrame~ need to be
 [[file:doomgeneric/doomgeneric_emacs.c][implemented in C]] with some [[file:doom.el][Elisp code as glue]]. It uses the native Canvas API
 which is part of the Emacs 32 source tree, and also available for download as
-[[https://github.com/minad/emacs-canvas-patch][patch]] for Emacs 31. See further canvas links below.
+[[https://github.com/minad/emacs-canvas-patch][patch]] for Emacs 31. See further Canvas links below.
 
 #+html: <img src="https://github.com/minad/doom-on-emacs/blob/main/screenshots/emacs.png?raw=true"/>
 
 * Running DOOM
 
-In order to run DOOM, you first need to apply the Canvas patch to the Emacs
-source and recompile Emacs. Then execute ~./run.sh~ to compile the module and
-start DOOM on Emacs. You will need a WAD file which contains the game data. The
-file ~doom1.wad~ is freely available. Error messages will appear in the ~*doom-log*~
-buffer.
+In order to run DOOM, you need an Emacs 32 with Canvas support. On Emacs 31
+first apply the Canvas patch to the Emacs source and recompile Emacs. Then
+execute ~./doom.sh~ to start DOOM on Emacs. You will need a WAD file which
+contains the game data. The file ~doom1.wad~ is freely available. Error messages
+will appear in the ~*doom-log*~ buffer.
 
 * Canvas links
 
