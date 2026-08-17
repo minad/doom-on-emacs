@@ -31,7 +31,7 @@
 
 ;; This is DOOM running inside Emacs using the Canvas API.  Run M-x doom to
 ;; start.  You may want set the variable `doom-args' which provides command line
-;; arguments to DOOM.
+;; arguments to DOOM.  DOOM logs to the `*doom-log*' buffer.
 
 ;;; Code:
 
@@ -77,6 +77,9 @@ Can be set for instance to (\"-iwad\" \"/home/user/path/to/doom1.iwad\")."
 (defvar doom--buffer "*doom*"
   "Buffer name.")
 
+(defvar doom--log "*doom-log*"
+  "Log buffer name.")
+
 (defvar doom--frame-count 0
   "Frame count.")
 
@@ -91,6 +94,12 @@ Can be set for instance to (\"-iwad\" \"/home/user/path/to/doom1.iwad\")."
 
 (declare-function doom--create "ext:doomgeneric_emacs.c")
 (declare-function doom--tick "ext:doomgeneric_emacs.c")
+
+(defun doom--log (msg)
+  "Log MSG from DOOM."
+  (with-current-buffer (get-buffer-create doom--log)
+    (goto-char (point-max))
+    (insert msg)))
 
 (defun doom--ms ()
   "Milliseconds since start."
@@ -282,8 +291,7 @@ NAME is an optional readable name."
                  (file-name-with-extension
                   "doomgeneric_emacs" module-file-suffix))))
       (unless (file-exists-p mod)
-        (with-current-buffer (get-buffer-create "*doom-compile*")
-          (compilation-mode)
+        (with-current-buffer (get-buffer-create doom--log)
           (switch-to-buffer (current-buffer))
           (with-silent-modifications
             (call-process "make" nil t t "-fMakefile.emacs"

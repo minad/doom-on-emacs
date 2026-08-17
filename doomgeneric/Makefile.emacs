@@ -13,7 +13,7 @@ endif
 
 CC=gcc
 CFLAGS+=-ggdb3 -Wall -DNORMALUNIX -DLINUX -DSNDSERV -D_DEFAULT_SOURCE -O2
-CFLAGS+=-Dexit=DG_Exit
+CFLAGS+=-Dexit=DG_Exit -Dprintf=DG_Print -Dfprintf=DG_FilePrint -Dputs=DG_PutStr -Dputc=DG_PutChr
 CFLAGS+=-fPIC -shared
 CFLAGS+=-DDOOMGENERIC_RESX=320 -DDOOMGENERIC_RESY=200
 

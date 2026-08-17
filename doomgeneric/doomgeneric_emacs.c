@@ -22,15 +22,51 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 #include "doomkeys.h"
 #include "doomgeneric.h"
 #include "emacs-module.h"
-#include <string.h>
 #include <setjmp.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
 
 static emacs_value Qnil, Qaccept_process_output, Qcanvas_refresh,
-    Qdoom_key, Qdoom_ms, Qdoom_canvas, Qdoom_title;
+    Qdoom_key, Qdoom_ms, Qdoom_canvas, Qdoom_title, Qdoom_log;
 static emacs_env* env;
 static jmp_buf jmp;
 static bool exited = false;
 int plugin_is_GPL_compatible;
+
+static int doom_log(const char* fmt, va_list va) {
+    char buf[1024];
+    int len = vsnprintf(buf, sizeof (buf), fmt, va);
+    env->funcall(env, Qdoom_log, 1,
+                 (emacs_value[]){ env->make_string(env, buf, len) });
+    return len;
+}
+
+int DG_FilePrint(FILE* fp, const char* fmt, ...) {
+    va_list va;
+    va_start(va, fmt);
+    int len = fp == stderr || fp == stdout
+        ? doom_log(fmt, va)
+        : vfprintf(stderr, fmt, va);
+    va_end(va);
+    return len;
+}
+
+int DG_Print(const char* fmt, ...) {
+    va_list va;
+    va_start(va, fmt);
+    int len = doom_log(fmt, va);
+    va_end(va);
+    return len;
+}
+
+int DG_PutChr(int c, FILE* fp) {
+    return DG_FilePrint(fp, "%c", c);
+}
+
+int DG_PutStr(const char* s) {
+    return DG_Print("%s\n", s);
+}
 
 void DG_Exit(int status) {
     exited = true;
@@ -73,29 +109,16 @@ int DG_GetKey(int* pressed, unsigned char* key) {
     return i != 0;
 }
 
-static emacs_value sym(const char* name) {
-    return env->make_global_ref(env, env->intern(env, name));
-}
-
-static void defun(emacs_env* env, const char* name,
-                  ptrdiff_t min, ptrdiff_t max, void* fun) {
-    env->funcall(env, env->intern(env, "defalias"), 2,
-                 (emacs_value[]){
-                     env->intern(env, name),
-                     env->make_function(env, min, max, fun, 0, 0)
-                 });
-}
-
-static emacs_value tick(emacs_env* env_, ptrdiff_t nargs,
-                        emacs_value args[], void* data) {
+static emacs_value doom_tick(emacs_env* env_, ptrdiff_t nargs,
+                             emacs_value args[], void* data) {
     env = env_;
     if (!exited && !setjmp(jmp))
         doomgeneric_Tick();
     return Qnil;
 }
 
-static emacs_value create(emacs_env* env_, ptrdiff_t nargs,
-                          emacs_value args[], void* data) {
+static emacs_value doom_create(emacs_env* env_, ptrdiff_t nargs,
+                               emacs_value args[], void* data) {
     env = env_;
     char** argv = malloc(sizeof (char*) * (nargs + 2));
     if (!argv) {
@@ -116,6 +139,19 @@ static emacs_value create(emacs_env* env_, ptrdiff_t nargs,
     return Qnil;
 }
 
+static emacs_value sym(const char* name) {
+    return env->make_global_ref(env, env->intern(env, name));
+}
+
+static void defun(emacs_env* env, const char* name,
+                  ptrdiff_t min, ptrdiff_t max, void* fun) {
+    env->funcall(env, env->intern(env, "defalias"), 2,
+                 (emacs_value[]){
+                     env->intern(env, name),
+                     env->make_function(env, min, max, fun, 0, 0)
+                 });
+}
+
 int emacs_module_init(struct emacs_runtime *rt) {
     if ((size_t)rt->size < sizeof (*rt))
         return 1;
@@ -129,7 +165,8 @@ int emacs_module_init(struct emacs_runtime *rt) {
     Qdoom_canvas = sym("doom--canvas");
     Qdoom_key = sym("doom--key");
     Qdoom_title = sym("doom--title");
-    defun(env, "doom--tick", 0, 0, tick);
-    defun(env, "doom--create", 0, emacs_variadic_function, create);
+    Qdoom_log = sym("doom--log");
+    defun(env, "doom--tick", 0, 0, doom_tick);
+    defun(env, "doom--create", 0, emacs_variadic_function, doom_create);
     return 0;
 }
