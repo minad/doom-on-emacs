@@ -35,6 +35,27 @@
 
 ;;; Code:
 
+(defgroup doom nil
+  "DOOM."
+  :link '(url-link :tag "Website" "https://github.com/minad/doom-on-emacs")
+  :link '(emacs-library-link :tag "Library Source" "doom.el")
+  :group 'games
+  :prefix "doom-")
+
+(defcustom doom-frame-rate 35
+  "Refreshing frame rate."
+  :type 'natnum)
+
+(defcustom doom-smooth t
+  "Smooth scaling.
+Note that smoothing is only fast if hardware accelerated."
+  :type 'boolean)
+
+(defcustom doom-args []
+  "String arguments passed to the DOOM main function.
+Can be set for instance to [\"-iwad\" \"/home/user/path/to/doom1.iwad\"]."
+  :type '(vector string))
+
 (defvar doom-refresh-timer nil
   "Refresh timer.")
 
@@ -53,13 +74,6 @@
 (defvar doom-key-up-timer nil
   "Timer to simulate key up event.")
 
-(defvar doom-frame-rate 35
-  "Refreshing frame rate.")
-
-(defvar doom-smooth t
-  "Smooth scaling.
-Note that smoothing is only fast if hardware accelerated.")
-
 (defvar doom-buffer "*doom*"
   "Buffer name.")
 
@@ -74,10 +88,6 @@ Note that smoothing is only fast if hardware accelerated.")
 
 (defvar doom-mode-line-title nil
   "Window title in mode line.")
-
-(defvar doom-args []
-  "String arguments passed to the DOOM main function.
-Can be set for instance to [\"-iwad\" \"/home/user/path/to/doom1.iwad\"].")
 
 (declare-function doom-tick "ext:doomgeneric_emacs.c")
 
@@ -254,10 +264,11 @@ NAME is an optional readable name."
           doom-start-ms (doom-ms)
           doom-frame-time (float-time)))
   (with-current-buffer (get-buffer-create doom-buffer)
-    (with-silent-modifications
-      (doom-mode)
-      (erase-buffer)
-      (insert (propertize "#" 'display doom-canvas))))
+    (unless (eq major-mode #'doom-mode)
+      (with-silent-modifications
+        (doom-mode)
+        (erase-buffer)
+        (insert (propertize "#" 'display doom-canvas)))))
   (unless (fboundp #'doom-tick)
     (let* ((default-directory
             (or (locate-file "doomgeneric"
