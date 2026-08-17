@@ -94,13 +94,13 @@ int emacs_module_init(struct emacs_runtime *rt) {
     Qnil = sym("nil");
     Qaccept_process_output = sym("accept-process-output");
     Qcanvas_refresh = sym("canvas-refresh");
-    Qdoom_ms = sym("doom-ms");
-    Qdoom_canvas = sym("doom-canvas");
-    Qdoom_key = sym("doom-key");
-    Qdoom_title = sym("doom-title");
+    Qdoom_ms = sym("doom--ms");
+    Qdoom_canvas = sym("doom--canvas");
+    Qdoom_key = sym("doom--key");
+    Qdoom_title = sym("doom--title");
     env->funcall(env, env->intern(env, "defalias"), 2,
                  (emacs_value[]){
-                     env->intern(env, "doom-tick"),
+                     env->intern(env, "doom--tick"),
                      env->make_function(env, 0, 0, tick, 0, 0)
                  });
     emacs_value args =

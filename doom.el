@@ -56,91 +56,91 @@ Note that smoothing is only fast if hardware accelerated."
 Can be set for instance to [\"-iwad\" \"/home/user/path/to/doom1.iwad\"]."
   :type '(vector string))
 
-(defvar doom-refresh-timer nil
+(defvar doom--refresh-timer nil
   "Refresh timer.")
 
-(defvar doom-canvas nil
+(defvar doom--canvas nil
   "Drawing canvas.")
 
-(defvar doom-start-ms 0
+(defvar doom--start-ms 0
   "Start time in milliseconds.")
 
-(defvar doom-keys nil
+(defvar doom--keys nil
   "List of key events.")
 
-(defvar doom-last-key nil
+(defvar doom--last-key nil
   "Last key press.")
 
-(defvar doom-key-up-timer nil
+(defvar doom--key-up-timer nil
   "Timer to simulate key up event.")
 
-(defvar doom-buffer "*doom*"
+(defvar doom--buffer "*doom*"
   "Buffer name.")
 
-(defvar doom-frame-count 0
+(defvar doom--frame-count 0
   "Frame count.")
 
-(defvar doom-frame-time nil
+(defvar doom--frame-time nil
   "Frame count start time.")
 
-(defvar doom-mode-line-frame-rate nil
+(defvar doom--mode-line-frame-rate nil
   "Measured frame rate in mode line.")
 
-(defvar doom-mode-line-title nil
+(defvar doom--mode-line-title nil
   "Window title in mode line.")
 
-(declare-function doom-tick "ext:doomgeneric_emacs.c")
+(declare-function doom--tick "ext:doomgeneric_emacs.c")
 
-(defun doom-ms ()
+(defun doom--ms ()
   "Milliseconds since start."
   (floor (* 1000 (float-time))))
 
-(defun doom-title (title)
+(defun doom--title (title)
   "Set TITLE."
-  (setq doom-mode-line-title title))
+  (setq doom--mode-line-title title))
 
-(defun doom-canvas ()
+(defun doom--canvas ()
   "Get canvas or stop timer if buffer is closed."
-  (if-let* ((buffer (get-buffer doom-buffer)))
+  (if-let* ((buffer (get-buffer doom--buffer)))
       (when-let* ((win (get-buffer-window buffer))
                   (time (float-time))
-                  (delta (- time doom-frame-time)))
-        (incf doom-frame-count)
+                  (delta (- time doom--frame-time)))
+        (incf doom--frame-count)
         (when (> delta 2)
-          (setq doom-mode-line-frame-rate (format " FPS: %.1f" (/ doom-frame-count delta))
-                doom-frame-time time
-                doom-frame-count 0)
+          (setq doom--mode-line-frame-rate (format " FPS: %.1f" (/ doom--frame-count delta))
+                doom--frame-time time
+                doom--frame-count 0)
           (force-mode-line-update t))
-        (let* ((scale (plist-get (cdr doom-canvas) :scale))
+        (let* ((scale (plist-get (cdr doom--canvas) :scale))
                (ww (window-text-width win t))
                (wh (window-text-height win t))
                (nscale (min (/ ww 320.0) (/ wh 200.0))))
           (when (/= scale nscale)
-            (image-flush doom-canvas)
-            (plist-put (cdr doom-canvas) :margin
+            (image-flush doom--canvas)
+            (plist-put (cdr doom--canvas) :margin
                        (cons (/ (- ww (round (* 320 nscale))) 2)
                              (/ (- wh (round (* 200 nscale))) 2)))
-            (plist-put (cdr doom-canvas) :scale nscale)))
-        doom-canvas)
-    (cancel-timer doom-refresh-timer)
-    (setq doom-refresh-timer nil)))
+            (plist-put (cdr doom--canvas) :scale nscale)))
+        doom--canvas)
+    (cancel-timer doom--refresh-timer)
+    (setq doom--refresh-timer nil)))
 
-(defun doom-key-down (key)
+(defun doom--key-down (key)
   "Simulate KEY press."
   ;; (message "DOWN %S" key)
-  (setq doom-keys `(,@doom-keys ,@(mapcar (lambda (k) (logior k #x100)) key))
-        doom-last-key key))
+  (setq doom--keys `(,@doom--keys ,@(mapcar (lambda (k) (logior k #x100)) key))
+        doom--last-key key))
 
-(defun doom-key-up ()
+(defun doom--key-up ()
   "Simulate release of last key."
-  (when doom-last-key
+  (when doom--last-key
     ;; (message "UP %S" doom-last)
-    (setq doom-keys `(,@doom-keys ,@doom-last-key)
-          doom-last-key nil)))
+    (setq doom--keys `(,@doom--keys ,@doom--last-key)
+          doom--last-key nil)))
 
-(defun doom-key ()
+(defun doom--key ()
   "Get last key or 0."
-  (or (pop doom-keys) 0))
+  (or (pop doom--keys) 0))
 
 (defun doom-key-command (key &optional name)
   "Command which pushes KEY to the queue.
@@ -152,18 +152,18 @@ NAME is an optional readable name."
     (defalias sym
       (lambda ()
         (interactive nil doom-mode)
-        (unless (equal key doom-last-key)
-          (doom-key-up)
-          (doom-key-down key))
-        (when doom-key-up-timer
-          (cancel-timer doom-key-up-timer)
-          (setq doom-key-up-timer nil))
+        (unless (equal key doom--last-key)
+          (doom--key-up)
+          (doom--key-down key))
+        (when doom--key-up-timer
+          (cancel-timer doom--key-up-timer)
+          (setq doom--key-up-timer nil))
         ;; HACK: We simulate key up events with a timer.  Use low level key events
         ;; as soon as bug#74423 lands in Emacs.
-        (setq doom-key-up-timer (run-at-time 0.05 nil
+        (setq doom--key-up-timer (run-at-time 0.05 nil
                                              (lambda ()
-                                               (doom-key-up)
-                                               (setq doom-key-up-timer nil)))))
+                                               (doom--key-up)
+                                               (setq doom--key-up-timer nil)))))
       (format "Send key %s to DOOM." name))
     sym))
 
@@ -235,9 +235,9 @@ NAME is an optional readable name."
               show-trailing-whitespace nil
               display-line-numbers nil
               default-directory (expand-file-name "~/")
-              mode-line-process '((doom-mode-line-title " Title: ")
-                                  (doom-mode-line-title doom-mode-line-title)
-                                  (doom-mode-line-frame-rate doom-mode-line-frame-rate))
+              mode-line-process '((doom--mode-line-title " Title: ")
+                                  (doom--mode-line-title doom--mode-line-title)
+                                  (doom--mode-line-frame-rate doom--mode-line-frame-rate))
               mode-line-position nil
               mode-line-modified nil
               mode-line-mule-info nil
@@ -253,23 +253,23 @@ NAME is an optional readable name."
   (interactive)
   (unless (image-type-available-p 'canvas)
     (error "Canvas API is not available"))
-  (unless doom-canvas
-    (setq doom-canvas `(image :type canvas
+  (unless doom--canvas
+    (setq doom--canvas `(image :type canvas
                               :id doom
                               :scale 1.0
                               :margin (0 . 0)
                               :transform-smoothing ,doom-smooth
                               :data-width 320
                               :data-height 200)
-          doom-start-ms (doom-ms)
-          doom-frame-time (float-time)))
-  (with-current-buffer (get-buffer-create doom-buffer)
+          doom--start-ms (doom--ms)
+          doom--frame-time (float-time)))
+  (with-current-buffer (get-buffer-create doom--buffer)
     (unless (eq major-mode #'doom-mode)
       (with-silent-modifications
         (doom-mode)
         (erase-buffer)
-        (insert (propertize "#" 'display doom-canvas)))))
-  (unless (fboundp #'doom-tick)
+        (insert (propertize "#" 'display doom--canvas)))))
+  (unless (fboundp #'doom--tick)
     (let* ((default-directory
             (or (locate-file "doomgeneric"
                              (cons nil load-path) nil
@@ -286,9 +286,9 @@ NAME is an optional readable name."
             (call-process "make" nil t t "-fMakefile.emacs"
                           (format "-j%d" (num-processors))))))
       (module-load mod)))
-  (unless doom-refresh-timer
-    (setq doom-refresh-timer (run-at-time nil (/ 1.0 doom-frame-rate) #'doom-tick)))
-  (switch-to-buffer doom-buffer)
+  (unless doom--refresh-timer
+    (setq doom--refresh-timer (run-at-time nil (/ 1.0 doom-frame-rate) #'doom--tick)))
+  (switch-to-buffer doom--buffer)
   (message "%s" (substitute-command-keys
                  "DOOM: Press \\[describe-mode] to see the key bindings")))
 
