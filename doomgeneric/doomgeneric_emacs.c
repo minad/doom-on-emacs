@@ -42,17 +42,21 @@ static int doom_log(const char* fmt, va_list va) {
     return len;
 }
 
-int DG_FilePrint(FILE* fp, const char* fmt, ...) {
+int DG_vfprintf(FILE* fp, const char* fmt, va_list va) {
+    return fp == stderr || fp == stdout
+        ? doom_log(fmt, va)
+        : (vfprintf)(stderr, fmt, va);
+}
+
+int DG_fprintf(FILE* fp, const char* fmt, ...) {
     va_list va;
     va_start(va, fmt);
-    int len = fp == stderr || fp == stdout
-        ? doom_log(fmt, va)
-        : vfprintf(stderr, fmt, va);
+    int len = DG_vfprintf(fp, fmt, va);
     va_end(va);
     return len;
 }
 
-int DG_Print(const char* fmt, ...) {
+int DG_printf(const char* fmt, ...) {
     va_list va;
     va_start(va, fmt);
     int len = doom_log(fmt, va);
@@ -60,19 +64,21 @@ int DG_Print(const char* fmt, ...) {
     return len;
 }
 
-int DG_PutChr(int c, FILE* fp) {
-    return DG_FilePrint(fp, "%c", c);
+int DG_putchar(int c) {
+    return DG_printf("%c", c);
 }
 
-int DG_PutStr(const char* s) {
-    return DG_Print("%s\n", s);
+int DG_putc(int c, FILE* fp) {
+    return DG_fprintf(fp, "%c", c);
 }
 
-void DG_Exit(int status) {
+int DG_puts(const char* s) {
+    return DG_printf("%s\n", s);
+}
+
+void DG_exit(int status) {
     exited = true;
-    const char* msg = "DOOM exited. Restart Emacs to play again.";
-    env->funcall(env, env->intern(env, "warn"), 1,
-                 (emacs_value[]){ env->make_string(env, msg, strlen(msg)) });
+    DG_puts("DOOM exited. Restart Emacs to play again.");
     longjmp(jmp, 1);
 }
 
