@@ -111,10 +111,10 @@ Can be set for instance to (\"-iwad\" \"/home/user/path/to/doom1.iwad\")."
 
 (defun doom--canvas ()
   "Get canvas or stop timer if buffer is closed."
-  (if-let* ((buffer (get-buffer doom--buffer)))
-      (when-let* ((win (get-buffer-window buffer))
-                  (time (float-time))
-                  (delta (- time doom--frame-time)))
+  (if-let* ((buffer (get-buffer doom--buffer))
+            (win (get-buffer-window buffer)))
+      (let* ((time (float-time))
+             (delta (- time doom--frame-time)))
         (incf doom--frame-count)
         (when (> delta 2)
           (setq doom--mode-line-frame-rate (format " FPS: %.1f"
@@ -133,8 +133,12 @@ Can be set for instance to (\"-iwad\" \"/home/user/path/to/doom1.iwad\")."
                              (/ (- wh (round (* 200 nscale))) 2)))
             (plist-put (cdr doom--canvas) :scale nscale)))
         doom--canvas)
-    (cancel-timer doom--refresh-timer)
-    (setq doom--refresh-timer nil)))
+    (when doom--refresh-timer
+      (message "%s" (substitute-command-keys "DOOM: Paused. \\[doom] to continue"))
+      (when (get-buffer doom--buffer)
+        (kill-buffer doom--buffer))
+      (cancel-timer doom--refresh-timer)
+      (setq doom--refresh-timer nil))))
 
 (defun doom--key-down (key)
   "Simulate KEY press."
